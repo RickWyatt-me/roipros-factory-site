@@ -42,8 +42,6 @@ body{
 a{color:var(--yellow)}
 a:hover{color:var(--orange)}
 .wrap{max-width:900px;margin:0 auto;padding:0 22px}
-/* caution tape */
-.tape{height:12px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 18px,#161b20 18px 36px);border-top:2px solid #000;border-bottom:2px solid #000}
 /* ---------- hero ---------- */
 header{padding:80px 0 56px;position:relative;overflow:hidden}
 .kicker{font-family:var(--mono);font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);margin-bottom:18px}
@@ -77,9 +75,10 @@ header .reveal:nth-child(4){animation-delay:.45s}
 /* ---------- sections ---------- */
 section{padding:64px 0;border-top:1px solid var(--line)}
 .secno{
-  font-family:var(--display);font-weight:700;color:var(--steel);
-  background:var(--yellow);display:inline-block;padding:2px 12px;
-  font-size:1rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;
+  font-family:var(--mono);font-weight:500;color:var(--orange);
+  display:inline-block;font-size:.8rem;letter-spacing:.22em;
+  text-transform:uppercase;margin-bottom:14px;
+  border-bottom:1px solid var(--line);padding-bottom:6px;
 }
 h2{
   font-family:var(--display);font-weight:900;text-transform:uppercase;
@@ -153,17 +152,17 @@ figcaption{font-size:.82rem;color:var(--ink-dim);font-style:italic;margin-top:8p
 .repo h4{font-family:var(--mono);font-size:1rem;color:var(--yellow);margin-bottom:8px}
 .repo p{font-size:.92rem;color:var(--ink-dim);flex:1;max-width:none}
 .repo a.btn{margin-top:14px;text-align:center;font-size:.9rem}
-/* diagram */
-.diagram{margin:26px 0;border:1px solid var(--line);background:var(--steel-2);padding:10px;overflow-x:auto}
-.diagram svg{display:block;min-width:760px;width:100%;height:auto}
+/* diagram boards — hand-drawn maps on paper cards */
+.board{margin:28px 0;background:#fdfbf6;border-radius:10px;padding:14px;
+  box-shadow:0 14px 44px rgba(0,0,0,.4)}
+.board img{width:100%;display:block;border-radius:4px}
+.board+figcaption, figure.boardfig figcaption{margin-top:10px}
 footer{padding:44px 0 60px;border-top:1px solid var(--line);font-size:.9rem;color:var(--ink-dim)}
 footer .sig{font-family:var(--display);text-transform:uppercase;font-size:1.2rem;color:var(--ink);letter-spacing:.04em}
 @media (max-width:600px){ body{font-size:1rem} section{padding:48px 0} }
 </style>
 </head>
 <body>
-
-<div class="tape"></div>
 
 <header>
   <div class="wrap">
@@ -176,8 +175,6 @@ footer .sig{font-family:var(--display);text-transform:uppercase;font-size:1.2rem
     </div>
   </div>
 </header>
-
-<div class="tape"></div>
 
 <section id="who">
   <div class="wrap sr">
@@ -194,48 +191,10 @@ footer .sig{font-family:var(--display);text-transform:uppercase;font-size:1.2rem
     <h2>How a piece of work moves</h2>
     <p class="big">Work enters as a GitHub issue. A timer fires every 30 minutes. Each tick, the factory does only what the autonomy dial allows — implement, validate, merge, deploy — and everything it does leaves a label on the issue, so the whole audit trail is readable from my phone.</p>
 
-    <div class="diagram">
-      <svg viewBox="0 0 980 300" role="img" aria-label="Pipeline: issue to accepted to implement to gates and judge to merge to deploy to brain sync, with an evolution loop back, plus the autonomy dial and stop button">
-        <defs>
-          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff7a1a"/></marker>
-        </defs>
-        <style>
-          .box{fill:#1f2932;stroke:#2e3b46}
-          .hot{stroke:#ff7a1a}
-          .lbl{font:700 15px 'Big Shoulders Display',sans-serif;fill:#e8eef2;text-transform:uppercase;letter-spacing:.5px}
-          .sub2{font:11px 'IBM Plex Mono',monospace;fill:#9fb0bc}
-          .flow{stroke:#ff7a1a;stroke-width:2;fill:none;marker-end:url(#arr)}
-          .loop{stroke:#6ee08a;stroke-width:1.5;fill:none;stroke-dasharray:5 4;marker-end:url(#arr)}
-        </style>
-        <!-- row 1 -->
-        <rect class="box hot" x="10" y="60" width="110" height="54"/><text class="lbl" x="65" y="83" text-anchor="middle">Issue</text><text class="sub2" x="65" y="100" text-anchor="middle">from my phone</text>
-        <line class="flow" x1="120" y1="87" x2="150" y2="87"/>
-        <rect class="box" x="152" y="60" width="128" height="54"/><text class="lbl" x="216" y="83" text-anchor="middle">Accepted</text><text class="sub2" x="216" y="100" text-anchor="middle">human signs label</text>
-        <line class="flow" x1="280" y1="87" x2="310" y2="87"/>
-        <rect class="box" x="312" y="60" width="128" height="54"/><text class="lbl" x="376" y="83" text-anchor="middle">Implement</text><text class="sub2" x="376" y="100" text-anchor="middle">branch + PR</text>
-        <line class="flow" x1="440" y1="87" x2="470" y2="87"/>
-        <rect class="box hot" x="472" y="48" width="150" height="78"/><text class="lbl" x="547" y="74" text-anchor="middle">Gates + Judge</text><text class="sub2" x="547" y="92" text-anchor="middle">code decides pass/fail</text><text class="sub2" x="547" y="108" text-anchor="middle">independent AI reviews</text>
-        <line class="flow" x1="622" y1="87" x2="652" y2="87"/>
-        <rect class="box" x="654" y="60" width="110" height="54"/><text class="lbl" x="709" y="83" text-anchor="middle">Merge</text><text class="sub2" x="709" y="100" text-anchor="middle">squash to develop</text>
-        <line class="flow" x1="764" y1="87" x2="794" y2="87"/>
-        <rect class="box" x="796" y="60" width="110" height="54"/><text class="lbl" x="851" y="83" text-anchor="middle">Deploy</text><text class="sub2" x="851" y="100" text-anchor="middle">health-checked</text>
-        <!-- brain + evolve loop -->
-        <path class="loop" d="M851 114 L851 190 L640 190"/>
-        <rect class="box" x="500" y="163" width="138" height="54"/><text class="lbl" x="569" y="186" text-anchor="middle">Brain sync</text><text class="sub2" x="569" y="203" text-anchor="middle">lap record, from git</text>
-        <path class="loop" d="M500 190 L360 190"/>
-        <rect class="box" x="222" y="163" width="136" height="54"/><text class="lbl" x="290" y="186" text-anchor="middle">Evolution</text><text class="sub2" x="290" y="203" text-anchor="middle">proposes, never applies</text>
-        <path class="loop" d="M222 190 L65 190 L65 118"/>
-        <!-- dial + stop -->
-        <circle cx="120" cy="262" r="20" fill="#1f2932" stroke="#ffc933" stroke-width="2"/>
-        <line x1="120" y1="262" x2="132" y2="248" stroke="#ffc933" stroke-width="3"/>
-        <text class="sub2" x="152" y="258">AUTONOMY DIAL 0–3</text>
-        <text class="sub2" x="152" y="274">every notch is my explicit go</text>
-        <circle cx="560" cy="262" r="20" fill="#3a1414" stroke="#ff5d5d" stroke-width="3"/>
-        <text style="font:900 13px 'Big Shoulders Display'" fill="#ff5d5d" x="560" y="267" text-anchor="middle">STOP</text>
-        <text class="sub2" x="592" y="258">TWO STOP BUTTONS — BOTH FAIL CLOSED</text>
-        <text class="sub2" x="592" y="274">a file on disk, or a label from my phone</text>
-      </svg>
-    </div>
+    <figure class="boardfig">
+      <div class="board"><img src="assets/factory-map.png" alt="Hand-drawn map of the factory: a GitHub issue gets the factory:accepted label from a human; a 30-minute timer tick drives a dumb dispatcher that reads labels only, with the autonomy dial and stop button read first; an implement agent opens a PR, a gate ladder decides pass or fail in code, an independent judge reviews the diff, and blocked work becomes needs-human; approved work squash-merges, deploys health-checked, and migrations ride the prod DB road of policy, judge, apply, probes; after the lap, brain-seed writes the git-derived record and the evolution loop proposes improvements back into the next tick."></div>
+      <figcaption>The whole lap on one board. Yellow means a decision, purple means an AI is doing the work, green means it shipped, red means it's waiting on me.</figcaption>
+    </figure>
 
     <div class="controls">
       <div class="control">
@@ -330,6 +289,11 @@ footer .sig{font-family:var(--display);text-transform:uppercase;font-size:1.2rem
       <li><strong>Check-ins are remote-control sessions.</strong> When something does need me, I open Claude Code remote control from my phone, look at what the factory parked, nudge it, and get back to my day.</li>
     </ul>
 
+    <figure class="boardfig">
+      <div class="board"><img src="assets/parallel-life.png" alt="Two parallel timelines: my day on top (jobsite walk, file an issue, lunch, kid's ballgame, dinner) and the factory below (tick: triage, tick: PR opens, tick: needs a human, tick: merged and deployed). The lines only touch twice: a red Slack ping coming up when something needs a human, and a 30-second reply going down from my phone."></div>
+      <figcaption>The picture that is the whole tip: two lines running in parallel, touching only when something actually needs me.</figcaption>
+    </figure>
+
     <figure>
       <div class="phone">
         <div class="notif">
@@ -357,6 +321,11 @@ footer .sig{font-family:var(--display);text-transform:uppercase;font-size:1.2rem
       <li><strong>Only when named:</strong> the deep archive — decision records, prompt history, lessons. Never pre-loaded.</li>
     </ul>
     <p>Two files always, everything else earns its way in. Decisions live in two sections — <strong>locked</strong> and <strong>open</strong> — and deciding something means moving the line between them, with a date and a name. Every session ends with three lines in a daily log: worked on, decided, open. Thirty seconds of discipline, and the next session starts warm.</p>
+    <figure class="boardfig">
+      <div class="board"><img src="assets/brain-ladder.png" alt="The loading ladder: SOUL.md and MEMORY.md always load; the active project's STATE and MEMORY load only if the project comes up, side projects get STATE only; the artifacts folder of decision records and lessons loads only when a task names it. Session start is two files, a few hundred lines - everything else earns its way in."></div>
+      <figcaption>The ladder. Two files always; everything below the first arrow has to earn its way into the session.</figcaption>
+    </figure>
+
     <p>My real brain repo stays private — it's full of my business. But the pattern is public as a fill-in-the-blanks starter, loader skill included.</p>
   </div>
 </section>
@@ -404,8 +373,6 @@ cat README.md INSTALL.md ADAPTERS.md   <span class="c"># read these in order —
     </ul>
   </div>
 </section>
-
-<div class="tape"></div>
 
 <footer>
   <div class="wrap">
