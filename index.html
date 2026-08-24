@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Night-Shift Factory — how I run my agents</title>
+<meta name="description" content="I file a GitHub issue from my phone, go about my day, and validated code merges itself. Here's the whole setup — the factory, the brain, and the rules. All public. Steal it.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏭</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --steel:#12181d;         /* night-shift charcoal */
+  --steel-2:#1a2229;
+  --panel:#1f2932;
+  --line:#2e3b46;
+  --ink:#e8eef2;
+  --ink-dim:#9fb0bc;
+  --orange:#ff7a1a;        /* safety orange */
+  --yellow:#ffc933;        /* caution */
+  --green:#6ee08a;         /* terminal */
+  --red:#ff5d5d;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --display:'Big Shoulders Display','Arial Narrow',sans-serif;
+  --body:'Atkinson Hyperlegible',Georgia,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--steel);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:1.06rem;
+  line-height:1.65;
+  /* blueprint grid */
+  background-image:
+    linear-gradient(rgba(120,160,190,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(120,160,190,.05) 1px,transparent 1px);
+  background-size:36px 36px;
+}
+a{color:var(--yellow)}
+a:hover{color:var(--orange)}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px}
+/* caution tape */
+.tape{height:12px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 18px,#161b20 18px 36px);border-top:2px solid #000;border-bottom:2px solid #000}
+/* ---------- hero ---------- */
+header{padding:80px 0 56px;position:relative;overflow:hidden}
+.kicker{font-family:var(--mono);font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);margin-bottom:18px}
+.kicker::before{content:"● ";color:var(--green);animation:blink 2.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+h1{
+  font-family:var(--display);font-weight:900;
+  font-size:clamp(2.6rem,7.5vw,5.2rem);
+  line-height:.98;text-transform:uppercase;letter-spacing:.01em;
+}
+h1 em{font-style:normal;color:var(--orange)}
+.sub{margin-top:26px;font-size:1.2rem;max-width:44ch;color:var(--ink-dim)}
+.sub strong{color:var(--ink)}
+.hero-cta{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{
+  display:inline-block;font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;font-size:1.05rem;text-decoration:none;
+  padding:12px 22px;border:2px solid var(--orange);color:var(--orange);
+  transition:all .15s ease;
+}
+.btn:hover{background:var(--orange);color:#141414}
+.btn.solid{background:var(--orange);color:#141414}
+.btn.solid:hover{background:var(--yellow);border-color:var(--yellow)}
+/* staggered load */
+header .reveal{opacity:0;transform:translateY(14px);animation:up .7s ease forwards}
+header .reveal:nth-child(1){animation-delay:.05s}
+header .reveal:nth-child(2){animation-delay:.15s}
+header .reveal:nth-child(3){animation-delay:.3s}
+header .reveal:nth-child(4){animation-delay:.45s}
+@keyframes up{to{opacity:1;transform:none}}
+/* ---------- sections ---------- */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.secno{
+  font-family:var(--display);font-weight:700;color:var(--steel);
+  background:var(--yellow);display:inline-block;padding:2px 12px;
+  font-size:1rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;
+}
+h2{
+  font-family:var(--display);font-weight:900;text-transform:uppercase;
+  font-size:clamp(1.9rem,4.5vw,3rem);line-height:1.02;margin-bottom:18px;
+}
+h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:1.35rem;letter-spacing:.03em;margin:28px 0 10px;color:var(--yellow)}
+p{margin:14px 0;max-width:62ch}
+p.big{font-size:1.18rem}
+.dim{color:var(--ink-dim)}
+/* scroll reveal */
+.sr{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.sr.in{opacity:1;transform:none}
+/* panels & artifacts */
+.panel{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--orange);padding:20px 22px;margin:22px 0}
+.panel .tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+pre.term{
+  background:#0c1013;border:1px solid var(--line);padding:16px 18px;margin:18px 0;
+  font-family:var(--mono);font-size:.84rem;line-height:1.6;color:var(--green);
+  overflow-x:auto;white-space:pre;
+}
+pre.term .c{color:#5b6b77}
+pre.term .y{color:var(--yellow)}
+pre.term .o{color:var(--orange)}
+pre.term .w{color:var(--ink)}
+code{font-family:var(--mono);font-size:.9em;background:#0c1013;padding:.1em .4em;border:1px solid var(--line)}
+pre.term code{background:none;border:none;padding:0}
+/* copy blocks */
+.copyblock{position:relative;margin:18px 0}
+.copyblock pre{margin:0}
+.copyblock button{
+  position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:.7rem;
+  background:var(--steel-2);color:var(--ink-dim);border:1px solid var(--line);
+  padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.1em;
+}
+.copyblock button:hover{color:var(--yellow);border-color:var(--yellow)}
+/* punch list */
+ul.punch{list-style:none;margin:16px 0}
+ul.punch li{padding:8px 0 8px 36px;position:relative;border-bottom:1px dashed var(--line);max-width:62ch}
+ul.punch li::before{
+  content:"✓";position:absolute;left:4px;top:8px;color:var(--green);
+  font-family:var(--mono);font-weight:700;border:1px solid var(--green);
+  width:20px;height:20px;text-align:center;line-height:19px;font-size:.75rem;
+}
+ul.punch li.x::before{content:"✕";color:var(--red);border-color:var(--red)}
+/* timeline */
+.timeline{border-left:2px solid var(--line);margin:26px 0 8px 8px;padding-left:26px}
+.tl{position:relative;margin-bottom:26px}
+.tl::before{content:"";position:absolute;left:-33px;top:6px;width:12px;height:12px;background:var(--orange);border:2px solid var(--steel)}
+.tl time{font-family:var(--mono);font-size:.78rem;color:var(--yellow);letter-spacing:.06em}
+.tl .what{font-weight:700}
+.tl .meta{font-family:var(--mono);font-size:.76rem;color:var(--ink-dim)}
+/* dial + stop */
+.controls{display:flex;gap:26px;flex-wrap:wrap;margin:26px 0;align-items:stretch}
+.control{flex:1 1 240px;background:var(--panel);border:1px solid var(--line);padding:18px;text-align:center}
+.control h4{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:1.1rem;margin-bottom:10px;color:var(--ink)}
+.control p{font-size:.9rem;color:var(--ink-dim);max-width:none;text-align:left}
+/* slack card */
+.phone{
+  max-width:380px;background:#0b0f14;border:1px solid var(--line);border-radius:22px;
+  padding:16px;margin:24px 0;box-shadow:0 18px 50px rgba(0,0,0,.45)
+}
+.notif{background:#1c2530;border-radius:12px;padding:12px 14px;font-size:.85rem;line-height:1.45}
+.notif .app{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-dim);margin-bottom:6px}
+.notif .app .dot{width:14px;height:14px;background:var(--orange);border-radius:3px;display:inline-block}
+.notif b{color:var(--ink)}
+.notif .body{color:var(--ink-dim);font-family:var(--mono);font-size:.76rem}
+figcaption{font-size:.82rem;color:var(--ink-dim);font-style:italic;margin-top:8px;max-width:52ch}
+/* repo cards */
+.repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin:24px 0}
+.repo{background:var(--panel);border:1px solid var(--line);padding:20px;display:flex;flex-direction:column}
+.repo h4{font-family:var(--mono);font-size:1rem;color:var(--yellow);margin-bottom:8px}
+.repo p{font-size:.92rem;color:var(--ink-dim);flex:1;max-width:none}
+.repo a.btn{margin-top:14px;text-align:center;font-size:.9rem}
+/* diagram */
+.diagram{margin:26px 0;border:1px solid var(--line);background:var(--steel-2);padding:10px;overflow-x:auto}
+.diagram svg{display:block;min-width:760px;width:100%;height:auto}
+footer{padding:44px 0 60px;border-top:1px solid var(--line);font-size:.9rem;color:var(--ink-dim)}
+footer .sig{font-family:var(--display);text-transform:uppercase;font-size:1.2rem;color:var(--ink);letter-spacing:.04em}
+@media (max-width:600px){ body{font-size:1rem} section{padding:48px 0} }
+</style>
+</head>
+<body>
+
+<div class="tape"></div>
+
+<header>
+  <div class="wrap">
+    <p class="kicker reveal">factory.roipros.com — the setup I run my agents from</p>
+    <h1 class="reveal">I file an issue from my phone.<br>I go about my day.<br><em>Validated code merges itself.</em></h1>
+    <p class="sub reveal">No dashboard I sit and watch. No terminal I babysit. A <strong>factory</strong> that builds, a <strong>brain</strong> that remembers, and a short set of <strong>rules</strong> the agents can't touch. This page is the walkthrough — and both repos are public, so you can run it too.</p>
+    <div class="hero-cta reveal">
+      <a class="btn solid" href="#get-it">Get the repos</a>
+      <a class="btn" href="#map">See how it works</a>
+    </div>
+  </div>
+</header>
+
+<div class="tape"></div>
+
+<section id="who">
+  <div class="wrap sr">
+    <span class="secno">Read this first</span>
+    <h2>Who this is from</h2>
+    <p class="big">I'm Rick. I've spent 25+ years running commercial and industrial construction jobs — owner's rep side. Now I'm building software with AI agents, and I run them the way I'd run a jobsite: <strong>clear scope, hard rules, independent inspection, and I don't stand over anyone's shoulder.</strong></p>
+    <p>What you're looking at is the real system that builds my app (a voice-first daily-reporting tool for construction crews). Not a demo. The timestamps below are from the actual logs.</p>
+  </div>
+</section>
+
+<section id="map">
+  <div class="wrap sr">
+    <span class="secno">01 — The map</span>
+    <h2>How a piece of work moves</h2>
+    <p class="big">Work enters as a GitHub issue. A timer fires every 30 minutes. Each tick, the factory does only what the autonomy dial allows — implement, validate, merge, deploy — and everything it does leaves a label on the issue, so the whole audit trail is readable from my phone.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 980 300" role="img" aria-label="Pipeline: issue to accepted to implement to gates and judge to merge to deploy to brain sync, with an evolution loop back, plus the autonomy dial and stop button">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff7a1a"/></marker>
+        </defs>
+        <style>
+          .box{fill:#1f2932;stroke:#2e3b46}
+          .hot{stroke:#ff7a1a}
+          .lbl{font:700 15px 'Big Shoulders Display',sans-serif;fill:#e8eef2;text-transform:uppercase;letter-spacing:.5px}
+          .sub2{font:11px 'IBM Plex Mono',monospace;fill:#9fb0bc}
+          .flow{stroke:#ff7a1a;stroke-width:2;fill:none;marker-end:url(#arr)}
+          .loop{stroke:#6ee08a;stroke-width:1.5;fill:none;stroke-dasharray:5 4;marker-end:url(#arr)}
+        </style>
+        <!-- row 1 -->
+        <rect class="box hot" x="10" y="60" width="110" height="54"/><text class="lbl" x="65" y="83" text-anchor="middle">Issue</text><text class="sub2" x="65" y="100" text-anchor="middle">from my phone</text>
+        <line class="flow" x1="120" y1="87" x2="150" y2="87"/>
+        <rect class="box" x="152" y="60" width="128" height="54"/><text class="lbl" x="216" y="83" text-anchor="middle">Accepted</text><text class="sub2" x="216" y="100" text-anchor="middle">human signs label</text>
+        <line class="flow" x1="280" y1="87" x2="310" y2="87"/>
+        <rect class="box" x="312" y="60" width="128" height="54"/><text class="lbl" x="376" y="83" text-anchor="middle">Implement</text><text class="sub2" x="376" y="100" text-anchor="middle">branch + PR</text>
+        <line class="flow" x1="440" y1="87" x2="470" y2="87"/>
+        <rect class="box hot" x="472" y="48" width="150" height="78"/><text class="lbl" x="547" y="74" text-anchor="middle">Gates + Judge</text><text class="sub2" x="547" y="92" text-anchor="middle">code decides pass/fail</text><text class="sub2" x="547" y="108" text-anchor="middle">independent AI reviews</text>
+        <line class="flow" x1="622" y1="87" x2="652" y2="87"/>
+        <rect class="box" x="654" y="60" width="110" height="54"/><text class="lbl" x="709" y="83" text-anchor="middle">Merge</text><text class="sub2" x="709" y="100" text-anchor="middle">squash to develop</text>
+        <line class="flow" x1="764" y1="87" x2="794" y2="87"/>
+        <rect class="box" x="796" y="60" width="110" height="54"/><text class="lbl" x="851" y="83" text-anchor="middle">Deploy</text><text class="sub2" x="851" y="100" text-anchor="middle">health-checked</text>
+        <!-- brain + evolve loop -->
+        <path class="loop" d="M851 114 L851 190 L640 190"/>
+        <rect class="box" x="500" y="163" width="138" height="54"/><text class="lbl" x="569" y="186" text-anchor="middle">Brain sync</text><text class="sub2" x="569" y="203" text-anchor="middle">lap record, from git</text>
+        <path class="loop" d="M500 190 L360 190"/>
+        <rect class="box" x="222" y="163" width="136" height="54"/><text class="lbl" x="290" y="186" text-anchor="middle">Evolution</text><text class="sub2" x="290" y="203" text-anchor="middle">proposes, never applies</text>
+        <path class="loop" d="M222 190 L65 190 L65 118"/>
+        <!-- dial + stop -->
+        <circle cx="120" cy="262" r="20" fill="#1f2932" stroke="#ffc933" stroke-width="2"/>
+        <line x1="120" y1="262" x2="132" y2="248" stroke="#ffc933" stroke-width="3"/>
+        <text class="sub2" x="152" y="258">AUTONOMY DIAL 0–3</text>
+        <text class="sub2" x="152" y="274">every notch is my explicit go</text>
+        <circle cx="560" cy="262" r="20" fill="#3a1414" stroke="#ff5d5d" stroke-width="3"/>
+        <text style="font:900 13px 'Big Shoulders Display'" fill="#ff5d5d" x="560" y="267" text-anchor="middle">STOP</text>
+        <text class="sub2" x="592" y="258">TWO STOP BUTTONS — BOTH FAIL CLOSED</text>
+        <text class="sub2" x="592" y="274">a file on disk, or a label from my phone</text>
+      </svg>
+    </div>
+
+    <div class="controls">
+      <div class="control">
+        <h4>The dial</h4>
+        <p>0 = everything by hand. 1 = it may open PRs. 2 = it may validate them. 3 = it may merge green work and deploy. I turned it up one notch at a time, and before every notch the gate had to <em>prove it could still fail</em>. A gate that can't fail isn't a gate.</p>
+      </div>
+      <div class="control">
+        <h4>The stop button</h4>
+        <p>Two of them, on purpose. <code>touch .factory/STOP</code> works with the network down. Labeling any open issue <code>factory:stop</code> works from my phone in line at the store. If the stop state can't be read, nothing runs. Fail closed or don't bother.</p>
+      </div>
+      <div class="control">
+        <h4>The rules it can't touch</h4>
+        <p>Three files govern everything: what the product <em>is</em>, how the factory must <em>behave</em>, and how the code is <em>written</em>. No agent may edit the rules it's judged by. Changes to those files are human commits only — and that's enforced in code, not vibes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="real-run">
+  <div class="wrap sr">
+    <span class="secno">02 — A real day</span>
+    <h2>August 18. I wasn't at the keyboard.</h2>
+    <p class="big">Here's one actual day from the logs — three PRs and a <strong>production database change</strong>, end to end, hands off.</p>
+
+    <div class="timeline">
+      <div class="tl">
+        <time>12:24 UTC</time>
+        <p class="what">PR #23 merges — refactors an edge function so its rate-cap rejections are actually testable.</p>
+        <p class="meta">+345 / −4 · implemented, gated, judged, merged by the factory</p>
+      </div>
+      <div class="tl">
+        <time>13:28 UTC</time>
+        <p class="what">PR #26 merges — adds covering indexes for unindexed foreign keys on three tables.</p>
+        <p class="meta">+35 / −1 · this one includes a database migration</p>
+      </div>
+      <div class="tl">
+        <time>13:46 UTC</time>
+        <p class="what">The factory applies migration 00168 to the <strong>production database</strong> — 18 minutes after merge, nobody watching.</p>
+        <p class="meta">three rungs: a static policy said the SQL was safe · an independent judge agreed · then 5 probes verified every index actually exists in prod</p>
+      </div>
+      <div class="tl">
+        <time>21:37 UTC</time>
+        <p class="what">PR #28 merges — stabilizes two flaky test suites with a deterministic settle pattern.</p>
+        <p class="meta">+42 / −20 · filed in the morning, done by night</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="tag">Actual verification record — .factory/deploy/db-apply/</p>
+      <pre class="term">20260818T134607Z-00168_fk_covering_indexes.json
+<span class="c">// five probes, one per index — "select count(*)=1 as ok from pg_indexes where…"</span>
+<span class="w">idx_reminders_project_id                          </span><span class="y">ok</span>
+<span class="w">idx_reminders_auto_completed_source_recording_id  </span><span class="y">ok</span>
+<span class="w">idx_value_events_recording_id                     </span><span class="y">ok</span>
+<span class="w">idx_value_events_batch_job_id                     </span><span class="y">ok</span>
+<span class="w">idx_report_distributions_actor_user_id            </span><span class="y">ok</span></pre>
+      <p class="dim">The rule for prod DB work is carved into the script's own header: <em>"the DB moves first, the code second, and nobody guesses."</em> If any probe fails, it stops and calls me.</p>
+    </div>
+
+    <p class="dim">(The product repo those PRs live in stays private — it's my app. The machinery that built them is the public part.)</p>
+  </div>
+</section>
+
+<section id="broke">
+  <div class="wrap sr">
+    <span class="secno">03 — When it broke</span>
+    <h2>Yes, it misfired. Here's what that looked like.</h2>
+    <p class="big">Anyone showing you an autonomous system that "just works" is editing the tape. Here's my favorite failure.</p>
+    <p>Two PRs finished at nearly the same time and both wanted the same migration number — like two subs both claiming the same parking spot. I'd built a fix: on rebase, the factory renumbers the loser automatically. Tested it interactively. Worked great.</p>
+    <p>First live run under the <em>scheduler</em>? The scheduler's environment doesn't have <code>node</code> on its PATH. The check couldn't run its own tooling — and it read its own failure as "duplicate migration found," then escalated to me with a completely fabricated story about a collision that didn't exist.</p>
+    <ul class="punch">
+      <li>The fix wasn't clever: resolve the tool absolutely, skip the check when a branch has no migrations at all, and — the real lesson — <strong>never let "my tooling broke" and "I found a problem" share an error code.</strong></li>
+      <li>The regression test now extracts the <em>live</em> functions out of the running script, verbatim, so the test literally cannot drift from the code it's testing.</li>
+      <li>The whole saga — bug, fix, and self-test — ships in the public repo below. Nothing sanded off.</li>
+    </ul>
+    <div class="panel">
+      <p class="tag">The doctrine that came out of it</p>
+      <p style="max-width:none"><strong>A silent skip is a failure.</strong> Every conditional check must print a conclusion — ran and passed, ran and failed, or skipped and said why. "Empty is not pass" is written into the gate's contract, because an unattended system that skips quietly looks exactly like one that checked.</p>
+    </div>
+  </div>
+</section>
+
+<section id="one-tip">
+  <div class="wrap sr">
+    <span class="secno">04 — The one tip</span>
+    <h2>The system runs in parallel with my life</h2>
+    <p class="big">If I could hand you one thing from all this, it's not a prompt or a model setting. It's this: <strong>stop sitting there watching your agents.</strong> The time saved isn't minutes per task — it's that I'm never at the keyboard waiting.</p>
+    <p>Three pieces make that real:</p>
+    <ul class="punch">
+      <li><strong>Escalation finds me; I don't poll it.</strong> The only state that reaches my phone is "needs a human." Everything else is the machine talking to itself. Notifications go local feed → email → Slack, in that order, and the notify script is written so an escalation can never be the thing that fails — a dead webhook degrades to the log, never to an error.</li>
+      <li><strong>The queue and the controls are phone-shaped.</strong> Work enters as a GitHub issue (I file them from the truck). The audit trail is labels. The stop button is a label. I can start, read, and stop the whole thing without a laptop.</li>
+      <li><strong>Check-ins are remote-control sessions.</strong> When something does need me, I open Claude Code remote control from my phone, look at what the factory parked, nudge it, and get back to my day.</li>
+    </ul>
+
+    <figure>
+      <div class="phone">
+        <div class="notif">
+          <div class="app"><span class="dot"></span> VOX FACTORY · via Slack</div>
+          <b>gh:pr:68 needs a human:</b>
+          <p class="body">LAP DONE: merged and deployed, health checks green (develop @ 966b458). No action needed.</p>
+        </div>
+      </div>
+      <figcaption>The actual message from Aug 20, 19:26 UTC, styled for this page — a lap finishing itself and telling me there's nothing to do. That's the whole point.</figcaption>
+    </figure>
+
+    <p>The honest version of the tip: you can't walk away from agents you don't trust, and you shouldn't trust agents you haven't fenced. The dial, the gates, the stop buttons — all that boring safety rail is <em>what buys the walking away</em>. Same as a jobsite: nobody "supervises harder" their way to safety. You build the system so the default is safe, then you go live your life.</p>
+  </div>
+</section>
+
+<section id="brain">
+  <div class="wrap sr">
+    <span class="secno">05 — The brain</span>
+    <h2>My agents never relearn anything</h2>
+    <p class="big">The factory is half the story. The other half: every session, every agent, wakes up already knowing who it works for, what's been decided, and what's currently true — because memory lives in a small git repo, not in anyone's context window.</p>
+    <p>The loading trick is a ladder, and it's the only load-bearing part:</p>
+    <ul class="punch">
+      <li><strong>Always:</strong> one small identity file (who I am, what I know cold, what's locked) and one global memory file (decisions + open questions).</li>
+      <li><strong>Only when a project comes up:</strong> that project's state file. The active project gets depth; side projects get one page.</li>
+      <li><strong>Only when named:</strong> the deep archive — decision records, prompt history, lessons. Never pre-loaded.</li>
+    </ul>
+    <p>Two files always, everything else earns its way in. Decisions live in two sections — <strong>locked</strong> and <strong>open</strong> — and deciding something means moving the line between them, with a date and a name. Every session ends with three lines in a daily log: worked on, decided, open. Thirty seconds of discipline, and the next session starts warm.</p>
+    <p>My real brain repo stays private — it's full of my business. But the pattern is public as a fill-in-the-blanks starter, loader skill included.</p>
+  </div>
+</section>
+
+<section id="get-it">
+  <div class="wrap sr">
+    <span class="secno">06 — Get it yourself</span>
+    <h2>Both repos. Public. Steal the pattern.</h2>
+
+    <div class="repos">
+      <div class="repo">
+        <h4>RickWyatt-me/dark-factory</h4>
+        <p>The engine, the governance templates, and the import procedure — a faithful extraction of the working factory, with every project-shaped seam documented instead of papered over. It builds nothing by itself; it binds to <em>your</em> repo, starting at dial 0.</p>
+        <a class="btn" href="https://github.com/RickWyatt-me/dark-factory">github.com/RickWyatt-me/dark-factory</a>
+      </div>
+      <div class="repo">
+        <h4>RickWyatt-me/brain-starter</h4>
+        <p>The memory pattern as a template repo: identity file, global memory, per-project state, the loader skill, and auto-sync hooks. Fill in the curly braces and your agents stop relearning your life every morning.</p>
+        <a class="btn" href="https://github.com/RickWyatt-me/brain-starter">github.com/RickWyatt-me/brain-starter</a>
+      </div>
+    </div>
+
+    <h3>Start the brain (5 minutes)</h3>
+    <div class="copyblock">
+      <pre class="term"><code>gh repo create my-brain --private --template RickWyatt-me/brain-starter --clone
+cd my-brain
+git config core.hooksPath .githooks
+cp -R .claude/skills/brain-loader ~/.claude/skills/</code></pre>
+      <button data-copy>copy</button>
+    </div>
+
+    <h3>Start the factory (an afternoon, honestly)</h3>
+    <div class="copyblock">
+      <pre class="term"><code>git clone https://github.com/RickWyatt-me/dark-factory.git
+cd dark-factory
+cat README.md INSTALL.md ADAPTERS.md   <span class="c"># read these in order — really</span></code></pre>
+      <button data-copy>copy</button>
+    </div>
+
+    <h3>Honest expectations</h3>
+    <ul class="punch">
+      <li class="x">It is not a framework. It's a working machine, extracted honestly — some parts are shaped like the project it came from, and a file named ADAPTERS.md tells you exactly which ones.</li>
+      <li class="x">It will not run unattended on day one. It starts at dial 0 with a human signing every piece of work, and it should. You earn each notch.</li>
+      <li>What you get on day one: the gates, the judges, the protected-file guard, the stop buttons, and a binding procedure that refuses to finish until the gate proves it can fail.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="tape"></div>
+
+<footer>
+  <div class="wrap">
+    <p class="sig">— Rick</p>
+    <p>25 years building real things · now building the thing that builds the things.<br>
+    This page, both repos, and the fix for the bug described in section 03 were built by the same agents and rules this page describes.</p>
+  </div>
+</footer>
+
+<script>
+// scroll reveal
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.sr').forEach(el=>io.observe(el));
+// copy buttons
+document.querySelectorAll('[data-copy]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const txt=btn.parentElement.querySelector('pre').innerText;
+    navigator.clipboard.writeText(txt).then(()=>{btn.textContent='copied ✓';setTimeout(()=>btn.textContent='copy',1600)});
+  });
+});
+</script>
+</body>
+</html>
